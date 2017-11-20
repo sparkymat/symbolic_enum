@@ -35,6 +35,11 @@ module SymbolicEnum
         reverse_mapping[self[field]]
       end
 
+      define_method("#{ field }=") do |value|
+        raise ArgumentError.new("cannot assign an invalid enum") unless value.nil? || mapping.keys.include?(value)
+        self[field] = mapping[value]
+      end
+
       mapping.each_pair do |state_name, state_value|
         scope state_name, -> { where(field => state_value) }
 

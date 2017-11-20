@@ -101,14 +101,33 @@ RSpec.describe SymbolicEnum do
       expect(SampleClass.states).to eq({abc: 1, def: 2})
 
       a = SampleClass.new
-      allow(a).to receive(:[]).with(:state).and_return(1)
 
+      allow(a).to receive(:[]).and_return(1)
       expect(a.state).to eq :abc
+      expect(a).to have_received(:[]).with(:state)
 
-      allow(a).to receive(:update_attributes!).with(state: :def)
-      allow(a).to receive(:[]).with(:state).and_return(2)
+      allow(a).to receive(:"[]=")
+      expect {
+        a.state = :def
+      }.to_not raise_error
+      expect(a).to have_received(:"[]=").with(:state, 2)
 
+      expect {
+        a.state = :foo
+      }.to raise_error(ArgumentError, "cannot assign an invalid enum")
+
+
+      allow(a).to receive(:"[]=")
+      allow(a).to receive(:update_attributes!).with({state: 2}).and_return(true)
+      expect {
+        a.def!
+      }.to_not raise_error
+      expect(a).to have_received(:"[]=").with(:state, 2)
+      expect(a).to have_received(:update_attributes!).with(state: 2)
+
+      allow(a).to receive(:[]).and_return(2)
       expect(a.state).to eq :def
+      expect(a).to have_received(:[]).with(:state).at_least(:once)
     end
   end
 end
