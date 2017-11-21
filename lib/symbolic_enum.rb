@@ -24,6 +24,8 @@ module SymbolicEnum
         end
       end
 
+      is_array = options[:array]
+
       # Replicating enum functionality (partially)
       define_singleton_method("#{ field.to_s.pluralize }") do
         mapping
@@ -31,13 +33,28 @@ module SymbolicEnum
 
       reverse_mapping = mapping.map{|v| [v[1],v[0]]}.to_h
 
-      define_method(field) do
-        reverse_mapping[self[field]]
+      if is_array
+        define_method(field) do
+          return nil if self[field].nil?
+
+          return self[field].map{ |v| reverse_mapping[v] }
+        end
+      else
+        define_method(field) do
+          reverse_mapping[self[field]]
+        end
       end
 
-      define_method("#{ field }=") do |value|
-        raise ArgumentError.new("cannot assign an invalid enum") unless value.nil? || mapping.keys.include?(value)
-        self[field] = mapping[value]
+      if is_array
+        define_method("#{ field }=") do |value|
+          raise ArgumentError.new("can only assign a valid array of enums") unless value.nil? || value.is_a?(Array) && value.map(&:class).uniq == [Symbol] && value.to_set.subset?(mapping.keys.to_set)
+          self[field] = value.nil? ? nil : value.map{|s| mapping[s] }
+        end
+      else
+        define_method("#{ field }=") do |value|
+          raise ArgumentError.new("can only assign a valid enum") unless value.nil? || mapping.keys.include?(value)
+          self[field] = mapping[value]
+        end
       end
 
       mapping.each_pair do |state_name, state_value|

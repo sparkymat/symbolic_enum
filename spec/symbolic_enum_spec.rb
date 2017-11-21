@@ -114,7 +114,7 @@ RSpec.describe SymbolicEnum do
 
       expect {
         a.state = :foo
-      }.to raise_error(ArgumentError, "cannot assign an invalid enum")
+      }.to raise_error(ArgumentError, "can only assign a valid enum")
 
 
       allow(a).to receive(:"[]=")
@@ -128,6 +128,51 @@ RSpec.describe SymbolicEnum do
       allow(a).to receive(:[]).and_return(2)
       expect(a.state).to eq :def
       expect(a).to have_received(:[]).with(:state).at_least(:once)
+    end
+  end
+
+  context 'generates appropriate behaviour for array' do
+    after do
+      Object.send(:remove_const, :SampleClass)
+    end
+
+    it 'generates the state map, getter and scopes' do
+      class SampleClass;end
+
+      expect(SampleClass).to receive(:scope).with(:abc, instance_of(Proc))
+      expect(SampleClass).to receive(:scope).with(:def, instance_of(Proc))
+
+      SampleClass.class_eval do
+        include SymbolicEnum
+
+        symbolic_enum states: {
+          abc: 1,
+          def: 2,
+        }, array: true
+      end
+
+      expect(SampleClass.states).to eq({abc: 1, def: 2})
+
+      a = SampleClass.new
+
+      allow(a).to receive(:[]).and_return([1,2])
+      expect(a.states.to_set).to eq [:abc, :def].to_set
+      expect(a).to have_received(:[]).with(:states).at_least(:once)
+
+      expect {
+        a.states = :abc
+      }.to raise_error(ArgumentError, "can only assign a valid array of enums")
+
+      expect {
+        a.states = [:foo]
+      }.to raise_error(ArgumentError, "can only assign a valid array of enums")
+
+
+      allow(a).to receive(:"[]=")
+      expect {
+        a.states = [:abc, :def]
+      }.to_not raise_error
+      expect(a).to have_received(:"[]=").with(:states, [1,2])
     end
   end
 end
