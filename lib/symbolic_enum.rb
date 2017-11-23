@@ -12,6 +12,12 @@ module SymbolicEnum
       field = params.keys.first
       mapping = params[field]
 
+      mapping.keys.each do |enum_name|
+        raise ArgumentError.new("'#{enum_name}' clashes with existing methods") if self.instance_methods.include?(:"#{enum_name}!")
+        raise ArgumentError.new("'#{enum_name}' clashes with existing methods") if self.instance_methods.include?(:"#{enum_name}?")
+        raise ArgumentError.new("'#{enum_name}' clashes with existing methods") if self.singleton_methods.include?(:"#{enum_name}!")
+      end
+
       options = params.reject{ |k,v| k == field }
 
       raise ArgumentError.new("argument has to be a Hash of field and mapping of unique Symbols to numbers, with optional configuration params") unless mapping.keys.count == mapping.keys.uniq.count && mapping.values.count == mapping.values.uniq.count && mapping.keys.map(&:class).uniq == [Symbol] && (mapping.values.map(&:class).uniq == [Integer] || mapping.values.map(&:class).uniq == [Fixnum])

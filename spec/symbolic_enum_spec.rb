@@ -76,6 +76,51 @@ RSpec.describe SymbolicEnum do
         end
       }.to raise_error(ArgumentError, "'foo' is not a valid option")
     end
+
+    it 'should not allow enums where setter clashes with existing methods' do
+      expect {
+        class SampleClass
+          include SymbolicEnum
+
+          def foo!
+          end
+
+          symbolic_enum field: {
+            foo: 1
+          }
+        end
+      }.to raise_error(ArgumentError, "'foo' clashes with existing methods")
+    end
+
+    it 'should not allow enums where getter clashes with existing methods' do
+      expect {
+        class SampleClass
+          include SymbolicEnum
+
+          def foo?
+          end
+
+          symbolic_enum field: {
+            foo: 1
+          }
+        end
+      }.to raise_error(ArgumentError, "'foo' clashes with existing methods")
+    end
+
+    it 'should not allow enums where scope clashes with existing methods' do
+      expect {
+        class SampleClass
+          include SymbolicEnum
+
+          def self.foo!
+          end
+
+          symbolic_enum field: {
+            foo: 1
+          }
+        end
+      }.to raise_error(ArgumentError, "'foo' clashes with existing methods")
+    end
   end
 
   context 'mimics Rails enum behaviour for non-array' do
