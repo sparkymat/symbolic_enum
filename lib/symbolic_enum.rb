@@ -12,12 +12,6 @@ module SymbolicEnum
       field = params.keys.first
       mapping = params[field]
 
-      mapping.keys.each do |enum_name|
-        raise ArgumentError.new("'#{enum_name}' clashes with existing methods") if self.instance_methods.include?(:"#{enum_name}!")
-        raise ArgumentError.new("'#{enum_name}' clashes with existing methods") if self.instance_methods.include?(:"#{enum_name}?")
-        raise ArgumentError.new("'#{enum_name}' clashes with existing methods") if self.singleton_methods.include?(:"#{enum_name}!")
-      end
-
       options = params.reject{ |k,v| k == field }
 
       raise ArgumentError.new("argument has to be a Hash of field and mapping of unique Symbols to numbers, with optional configuration params") unless mapping.keys.count == mapping.keys.uniq.count && mapping.values.count == mapping.values.uniq.count && mapping.keys.map(&:class).uniq == [Symbol] && (mapping.values.map(&:class).uniq == [Integer] || mapping.values.map(&:class).uniq == [Fixnum])
@@ -25,12 +19,24 @@ module SymbolicEnum
         case key
         when :array
           raise ArgumentError.new("'array' option can be only true/false") unless [true, false].include?(value)
+        when :disable_scopes
+          raise ArgumentError.new("'disable_scopes' option can be only true/false") unless [true, false].include?(value)
+        when :disable_setters
+          raise ArgumentError.new("'disable_setters' option can be only true/false") unless [true, false].include?(value)
         else
           raise ArgumentError.new("'#{ key }' is not a valid option")
         end
       end
 
       is_array = options[:array]
+      disable_scopes = options[:disable_scopes]
+      disable_setters = options[:disable_setters]
+
+      mapping.keys.each do |enum_name|
+        raise ArgumentError.new("'#{enum_name}' clashes with existing methods") if self.instance_methods.include?(:"#{enum_name}!") unless disable_setters
+        raise ArgumentError.new("'#{enum_name}' clashes with existing methods") if self.instance_methods.include?(:"#{enum_name}?")
+        raise ArgumentError.new("'#{enum_name}' clashes with existing methods") if self.singleton_methods.include?(enum_name) unless disable_scopes
+      end
 
       # Replicating enum functionality (partially)
       define_singleton_method("#{ field.to_s.pluralize }") do
@@ -64,14 +70,18 @@ module SymbolicEnum
       end
 
       mapping.each_pair do |state_name, state_value|
-        scope state_name, -> { where(field => state_value) }
+        unless disable_scopes
+          scope state_name, -> { where(field => state_value) }
+        end
 
         define_method("#{ state_name }?".to_sym) do
           self[field] == state_value
         end
 
-        define_method("#{ state_name }!".to_sym) do
-          self.update_attributes!(field => state_value)
+        unless disable_setters
+          define_method("#{ state_name }!".to_sym) do
+            self.update_attributes!(field => state_value)
+          end
         end
       end
     end

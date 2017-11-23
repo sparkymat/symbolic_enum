@@ -112,7 +112,7 @@ RSpec.describe SymbolicEnum do
         class SampleClass
           include SymbolicEnum
 
-          def self.foo!
+          def self.foo
           end
 
           symbolic_enum field: {
@@ -218,6 +218,44 @@ RSpec.describe SymbolicEnum do
         a.states = [:abc, :def]
       }.to_not raise_error
       expect(a).to have_received(:"[]=").with(:states, [1,2])
+    end
+  end
+
+  context 'allows disabling of setters, scopes' do
+    after do
+      Object.send(:remove_const, :SampleClass)
+    end
+
+    it 'should allow scopes to be disabled' do
+      class SampleClass;end
+
+      expect(SampleClass).to_not receive(:scope)
+
+      SampleClass.class_eval do
+        include SymbolicEnum
+
+        symbolic_enum state: {
+          foo: 1,
+        }, disable_scopes: true
+      end
+
+      expect(SampleClass).to_not respond_to(:foo)
+    end
+
+    it 'should allow setters to be disabled' do
+      class SampleClass;end
+
+      expect(SampleClass).to receive(:scope).with(:foo, instance_of(Proc))
+
+      SampleClass.class_eval do
+        include SymbolicEnum
+
+        symbolic_enum state: {
+          foo: 1,
+        }, disable_setters: true
+      end
+
+      expect(SampleClass.new).to_not respond_to(:foo!)
     end
   end
 end
