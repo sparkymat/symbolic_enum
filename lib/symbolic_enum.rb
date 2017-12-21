@@ -59,13 +59,13 @@ module SymbolicEnum
 
       if is_array
         define_method("#{ field }=") do |value|
-          raise ArgumentError.new("can only assign a valid array of enums") unless value.nil? || value.is_a?(Array) && value.map(&:class).uniq == [Symbol] && value.to_set.subset?(mapping.keys.to_set)
-          self[field] = value.nil? ? nil : value.map{|s| mapping[s] }
+          raise ArgumentError.new("can only assign a valid array of enums") unless value.nil? || (value.is_a?(Array) && value.map(&:class).to_set.subset?([String, Symbol].to_set) && value.map(&:to_sym).to_set.subset?(mapping.keys.to_set))
+          self[field] = value.nil? ? nil : value.map{|s| mapping[s.to_sym] }
         end
       else
         define_method("#{ field }=") do |value|
-          raise ArgumentError.new("can only assign a valid enum") unless value.nil? || mapping.keys.include?(value)
-          self[field] = mapping[value]
+          raise ArgumentError.new("can only assign a valid enum") unless value.nil? || ((value.is_a?(Symbol) || value.is_a?(String)) && mapping.keys.include?(value.to_sym))
+          self[field] = value.nil? ? nil : mapping[value.to_sym]
         end
       end
 
