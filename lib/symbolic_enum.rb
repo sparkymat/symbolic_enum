@@ -38,6 +38,19 @@ module SymbolicEnum
         raise ArgumentError.new("'#{enum_name}' clashes with existing methods") if self.singleton_methods.include?(enum_name) unless disable_scopes
       end
 
+      symbolic_enums = {}
+      begin
+        symbolic_enums = self.class_variable_get(:@@symbolic_enums)
+      rescue NameError
+      end
+      symbolic_enums ||= {}
+      symbolic_enums = symbolic_enums.merge(params)
+      self.class_variable_set(:@@symbolic_enums, symbolic_enums)
+
+      define_singleton_method(:symbolic_enums) do
+        self.class_variable_get(:@@symbolic_enums || {})
+      end
+
       # Replicating enum functionality (partially)
       define_singleton_method("#{ field.to_s.pluralize }") do
         mapping

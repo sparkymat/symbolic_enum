@@ -143,6 +143,7 @@ RSpec.describe SymbolicEnum do
         }
       end
 
+      expect(SampleClass.symbolic_enums).to eq({state: {abc: 1, def: 2}})
       expect(SampleClass.states).to eq({abc: 1, def: 2})
 
       a = SampleClass.new
