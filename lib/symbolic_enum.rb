@@ -44,7 +44,7 @@ module SymbolicEnum
       rescue NameError
       end
       symbolic_enums ||= {}
-      symbolic_enums = symbolic_enums.merge(params)
+      symbolic_enums = symbolic_enums.merge(params.select{|k,v| k == field})
       self.class_variable_set(:@@symbolic_enums, symbolic_enums)
 
       define_singleton_method(:symbolic_enums) do
