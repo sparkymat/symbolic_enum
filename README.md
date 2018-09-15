@@ -24,7 +24,36 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+`symbolic_enum` is used similar to `enum`. For example,
+
+```ruby
+class Car < ApplicationRecord
+  include SymbolicEnum
+
+  symbolic_enum category: {
+    sedan:     0,
+    hatchback: 1,
+    suv:       2,
+    other:     3,
+  }
+end
+
+# Usage
+c = Car.create!
+c.sedan!
+
+c.sedan? # true
+
+c.hatchback? # false
+
+c.category = :suv
+
+c.category # :suv
+c.save!
+
+Car.suv.pluck(:id).include?(c.id) # true
+
+```
 
 ## Development
 
