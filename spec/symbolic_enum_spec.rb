@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 RSpec.describe SymbolicEnum do
-  it "has a version number" do
+  it 'has a version number' do
     expect(SymbolicEnum::VERSION).not_to be nil
   end
 
@@ -25,7 +27,7 @@ RSpec.describe SymbolicEnum do
 
           symbolic_enum :field
         end
-      }.to raise_error(ArgumentError, "argument has to be a Hash of field and mapping of unique Symbols to numbers, with optional configuration params")
+      }.to raise_error(ArgumentError, 'argument has to be a Hash of field and mapping of unique Symbols to numbers, with optional configuration params')
     end
 
     it 'should only allow a field and mappings' do
@@ -35,7 +37,7 @@ RSpec.describe SymbolicEnum do
 
           symbolic_enum field: :value
         end
-      }.to raise_error(ArgumentError, "argument has to be a Hash of field and mapping of unique Symbols to numbers, with optional configuration params")
+      }.to raise_error(ArgumentError, 'argument has to be a Hash of field and mapping of unique Symbols to numbers, with optional configuration params')
     end
 
     it 'should only allow a mapping of symbols to numbers' do
@@ -44,11 +46,11 @@ RSpec.describe SymbolicEnum do
           include SymbolicEnum
 
           symbolic_enum field: {
-            1 => "a",
+            1 => 'a',
             :x => false,
           }
         end
-      }.to raise_error(ArgumentError, "argument has to be a Hash of field and mapping of unique Symbols to numbers, with optional configuration params")
+      }.to raise_error(ArgumentError, 'argument has to be a Hash of field and mapping of unique Symbols to numbers, with optional configuration params')
     end
 
     it 'should only allow a mapping of unique symbols to unique numbers' do
@@ -61,7 +63,7 @@ RSpec.describe SymbolicEnum do
             bar: 1,
           }
         end
-      }.to raise_error(ArgumentError, "argument has to be a Hash of field and mapping of unique Symbols to numbers, with optional configuration params")
+      }.to raise_error(ArgumentError, 'argument has to be a Hash of field and mapping of unique Symbols to numbers, with optional configuration params')
     end
 
     it 'should only allow whitelisted options' do
@@ -129,7 +131,7 @@ RSpec.describe SymbolicEnum do
     end
 
     it 'generates the state map, getter and scopes' do
-      class SampleClass;end
+      class SampleClass; end
 
       expect(SampleClass).to receive(:scope).with(:abc, instance_of(Proc))
       expect(SampleClass).to receive(:scope).with(:def, instance_of(Proc))
@@ -143,8 +145,8 @@ RSpec.describe SymbolicEnum do
         }
       end
 
-      expect(SampleClass.symbolic_enums).to eq({state: {abc: 1, def: 2}})
-      expect(SampleClass.states).to eq({abc: 1, def: 2})
+      expect(SampleClass.symbolic_enums).to eq({ state: { abc: 1, def: 2 } })
+      expect(SampleClass.states).to eq({ abc: 1, def: 2 })
 
       a = SampleClass.new
 
@@ -160,11 +162,10 @@ RSpec.describe SymbolicEnum do
 
       expect {
         a.state = :foo
-      }.to raise_error(ArgumentError, "can only assign a valid enum")
-
+      }.to raise_error(ArgumentError, 'can only assign a valid enum')
 
       allow(a).to receive(:"[]=")
-      allow(a).to receive(:update_attributes!).with({state: 2}).and_return(true)
+      allow(a).to receive(:update_attributes!).with({ state: 2 }).and_return(true)
       expect {
         a.def!
       }.to_not raise_error
@@ -183,7 +184,7 @@ RSpec.describe SymbolicEnum do
     end
 
     it 'generates the state map, getter and scopes' do
-      class SampleClass;end
+      class SampleClass; end
 
       expect(SampleClass).to receive(:scope).with(:abc, instance_of(Proc))
       expect(SampleClass).to receive(:scope).with(:def, instance_of(Proc))
@@ -197,28 +198,27 @@ RSpec.describe SymbolicEnum do
         }, array: true
       end
 
-      expect(SampleClass.states).to eq({abc: 1, def: 2})
+      expect(SampleClass.states).to eq({ abc: 1, def: 2 })
 
       a = SampleClass.new
 
-      allow(a).to receive(:[]).and_return([1,2])
+      allow(a).to receive(:[]).and_return([1, 2])
       expect(a.states.to_set).to eq [:abc, :def].to_set
       expect(a).to have_received(:[]).with(:states).at_least(:once)
 
       expect {
         a.states = :abc
-      }.to raise_error(ArgumentError, "can only assign a valid array of enums")
+      }.to raise_error(ArgumentError, 'can only assign a valid array of enums')
 
       expect {
         a.states = [:foo]
-      }.to raise_error(ArgumentError, "can only assign a valid array of enums")
-
+      }.to raise_error(ArgumentError, 'can only assign a valid array of enums')
 
       allow(a).to receive(:"[]=")
       expect {
         a.states = [:abc, :def]
       }.to_not raise_error
-      expect(a).to have_received(:"[]=").with(:states, [1,2])
+      expect(a).to have_received(:"[]=").with(:states, [1, 2])
     end
   end
 
@@ -228,7 +228,7 @@ RSpec.describe SymbolicEnum do
     end
 
     it 'should allow scopes to be disabled' do
-      class SampleClass;end
+      class SampleClass; end
 
       expect(SampleClass).to_not receive(:scope)
 
@@ -244,7 +244,7 @@ RSpec.describe SymbolicEnum do
     end
 
     it 'should allow setters to be disabled' do
-      class SampleClass;end
+      class SampleClass; end
 
       expect(SampleClass).to receive(:scope).with(:foo, instance_of(Proc))
 
