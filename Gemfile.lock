@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    symbolic_enum (1.1.4)
+    symbolic_enum (1.1.5)
 
 GEM
   remote: https://rubygems.org/
